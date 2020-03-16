@@ -4,7 +4,7 @@ import os
 
 from tqdm import tqdm
 
-from baselines.models_pytorch.mrc_pytorch.tools import official_tokenization as tokenization
+from src.tools import official_tokenization as tokenization
 
 SPIECE_UNDERLINE = '▁'
 
