@@ -123,8 +123,15 @@ if __name__ == "__main__":
                         default=False,
                         action='store_true',
                         help="whether is albert?")
+
     args = parser.parse_args()
-    convert_tf_checkpoint_to_pytorch(args.tf_checkpoint_path,
-                                     args.bert_config_file,
-                                     args.pytorch_dump_path,
+
+    # ##################### test
+    args.tf_checkpoint_path = '/home/wjunneng/Ubuntu/2020-DataFountain-Outbreak-Assistant/data/prev_trained_model/albert_xlarge/model.ckpt-best.index'
+    args.bert_config_file = '/home/wjunneng/Ubuntu/2020-DataFountain-Outbreak-Assistant/data/prev_trained_model/albert_xlarge/albert_config.json'
+    args.pytorch_dump_path = '/home/wjunneng/Ubuntu/2020-DataFountain-Outbreak-Assistant/data/prev_trained_model/albert_xlarge/pytorch_albert_model.pth'
+    args.is_albert = True
+    # ##################### test
+
+    convert_tf_checkpoint_to_pytorch(args.tf_checkpoint_path, args.bert_config_file, args.pytorch_dump_path,
                                      args.is_albert)

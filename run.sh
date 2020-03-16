@@ -2,36 +2,37 @@
 
 CURRENT_DIR=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
 export MODEL_NAME=albert_xlarge
-export OUTPUT_DIR=$CURRENT_DIR/data/check_points
-export BERT_DIR=$OUTPUT_DIR/prev_trained_model/$MODEL_NAME
-export GLUE_DIR=$CURRENT_DIR/mrc_data
+export DATA_DIR=$CURRENT_DIR/data
+export INPUT_DIR=$DATA_DIR/input
+export OUTPUT_DIR=$DATA_DIR/output
+export BERT_DIR=$DATA_DIR/prev_trained_model/$MODEL_NAME
 
-TASK_NAME="Outbreak Assistant"
+#python src/tools/convert_tf_checkpoint_to_pytorch.py \
+#  --tf_checkpoint_path=$BERT_DIR/model.ckpt-best.index \
+#  --bert_config_file=$BERT_DIR/albert_config.json \
+#  --pytorch_dump_path=$BERT_DIR/pytorch_albert_model.pth \
+#  --is_albert \
 
-python src/tools/convert_tf_checkpoint_to_pytorch.py \
-  --tf_checkpoint_path = BERT_DIR \
-  --bert_config_file = $BERT_DIR/albert_config.json \
-  --pytorch_dump_path= $BERT_DIR/pytorch_albert_model.pth \
-  --is_albert
+#TASK_NAME="Outbreak Assistant"
+TASK_NAME='CMRC2018'
+python run.py \
+  --gpu_ids="0" \
+  --train_epochs=2 \
+  --n_batch=2 \
+  --lr=3e-5 \
+  --warmup_rate=0.1 \
+  --max_seq_length=128 \
+  --task_name=$TASK_NAME \
+  --vocab_file=$BERT_DIR/vocab_chinese.txt \
+  --bert_config_file=$BERT_DIR/albert_config.json \
+  --init_restore_dir=$BERT_DIR/pytorch_albert_model.pth \
+  --train_dir=$DATA_DIR/$TASK_NAME/train_features.json \
+  --train_file=$DATA_DIR/$TASK_NAME/train.json \
+  --dev_dir1=$DATA_DIR/$TASK_NAME/dev_examples.json \
+  --dev_dir2=$DATA_DIR/$TASK_NAME/dev_features.json \
+  --dev_file=$DATA_DIR/$TASK_NAME/dev.json \
+  --checkpoint_dir=$OUTPUT_DIR/$TASK_NAME/$MODEL_NAME/
 
-#python run.py \
-#  --gpu_ids="0" \
-#  --train_epochs=2 \
-#  --n_batch=8 \
-#  --lr=3e-5 \
-#  --warmup_rate=0.1 \
-#  --max_seq_length=512 \
-#  --task_name=$TASK_NAME \
-#  --vocab_file=$BERT_DIR/vocab.txt \
-#  --bert_config_file=$BERT_DIR/bert_config.json \
-#  --init_restore_dir=$BERT_DIR/pytorch_model.pth \
-#  --train_dir=$GLUE_DIR/$TASK_NAME/train_features.json \
-#  --train_file=$GLUE_DIR/$TASK_NAME/cmrc2018_train.json \
-#  --dev_dir1=$GLUE_DIR/$TASK_NAME/dev_examples.json \
-#  --dev_dir2=$GLUE_DIR/$TASK_NAME/dev_features.json \
-#  --dev_file=$GLUE_DIR/$TASK_NAME/cmrc2018_dev.json \
-#  --checkpoint_dir=$OUTPUT_DIR/$TASK_NAME/$MODEL_NAME/
-#
 #python test_mrc.py \
 #  --gpu_ids="0" \
 #  --n_batch=8 \
@@ -41,6 +42,6 @@ python src/tools/convert_tf_checkpoint_to_pytorch.py \
 #  --bert_config_file=$BERT_DIR/bert_config.json \
 #  --init_restore_dir=$OUTPUT_DIR/$TASK_NAME/$MODEL_NAME/ \
 #  --output_dir=$OUTPUT_DIR/$TASK_NAME/$MODEL_NAME/ \
-#  --test_dir1=$GLUE_DIR/$TASK_NAME/test_examples.json \
-#  --test_dir2=$GLUE_DIR/$TASK_NAME/test_features.json \
-#  --test_file=$GLUE_DIR/$TASK_NAME/cmrc2018_test_2k.json \
+#  --test_dir1=$DATA_DIR/$TASK_NAME/test_examples.json \
+#  --test_dir2=$DATA_DIR/$TASK_NAME/test_features.json \
+#  --test_file=$DATA_DIR/$TASK_NAME/cmrc2018_test_2k.json \

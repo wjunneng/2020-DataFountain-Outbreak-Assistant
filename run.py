@@ -1,20 +1,24 @@
+# -*- coding:utf-8 -*-
+import os
+import sys
+
+os.chdir(sys.path[0])
 import argparse
 import collections
 import json
-import os
 import random
-
 import numpy as np
 import torch
 
 from tqdm import tqdm
 from torch.utils.data import TensorDataset, DataLoader
-from google_albert_pytorch_modeling import AlbertConfig, AlbertForMRC
-from pytorch_modeling import BertConfig, BertForQuestionAnswering, ALBertConfig, ALBertForQA
 
-from src.preprocess.cmrc2018_evaluate import get_eval
+from src.preprocess.evaluate import get_eval
+from src.tools.google_albert_pytorch_modeling import AlbertConfig, AlbertForMRC
+from src.tools.pytorch_modeling import BertConfig, BertForQuestionAnswering, ALBertConfig, ALBertForQA
 from src.tools import official_tokenization as tokenization, utils
 from src.tools.pytorch_optimization import get_optimization, warmup_linear
+
 
 def evaluate(model, args, eval_examples, eval_features, device, global_steps, best_f1, best_em, best_f1_em):
     print("***** Eval *****")
@@ -116,8 +120,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.task_name.lower() == 'outbreak assistant':
-        from preprocess.cmrc2018_output import write_predictions
-        from preprocess.cmrc2018_preprocess import json2features
+        from src.preprocess.output import write_predictions
+        from src.preprocess.preprocess import json2features
+    elif args.task_name.lower() == 'cmrc2018':
+        from src.preprocess.output import write_predictions
+        from src.preprocess.preprocess import json2features
     else:
         raise NotImplementedError
 
@@ -196,7 +203,7 @@ if __name__ == '__main__':
         if 'albert' not in args.init_restore_dir:
             model = BertForQuestionAnswering(bert_config)
         else:
-            if 'google' in args.init_restore_dir:
+            if 'albert' in args.init_restore_dir:
                 model = AlbertForMRC(bert_config)
             else:
                 model = ALBertForQA(bert_config, dropout_rate=args.dropout)
