@@ -13,8 +13,8 @@ export BERT_DIR=$DATA_DIR/prev_trained_model/$MODEL_NAME
 #  --pytorch_dump_path=$BERT_DIR/pytorch_albert_model.pth \
 #  --is_albert \
 
-#TASK_NAME="Outbreak Assistant"
-TASK_NAME='CMRC2018'
+#TASK_NAME='CMRC2018'
+TASK_NAME="Outbreak Assistant"
 python run.py \
   --gpu_ids="0" \
   --train_epochs=2 \
@@ -26,11 +26,11 @@ python run.py \
   --vocab_file=$BERT_DIR/vocab_chinese.txt \
   --bert_config_file=$BERT_DIR/albert_config.json \
   --init_restore_dir=$BERT_DIR/pytorch_albert_model.pth \
-  --train_dir=$DATA_DIR/$TASK_NAME/train_features.json \
-  --train_file=$DATA_DIR/$TASK_NAME/train.json \
-  --dev_dir1=$DATA_DIR/$TASK_NAME/dev_examples.json \
-  --dev_dir2=$DATA_DIR/$TASK_NAME/dev_features.json \
-  --dev_file=$DATA_DIR/$TASK_NAME/dev.json \
+  --train_file=$INPUT_DIR/train.json \
+  --dev_file=$INPUT_DIR/dev.json \
+  --train_dir=$INPUT_DIR/train_features.json \
+  --dev_dir1=$INPUT_DIR/dev_examples.json \
+  --dev_dir2=$INPUT_DIR/dev_features.json \
   --checkpoint_dir=$OUTPUT_DIR/$TASK_NAME/$MODEL_NAME/
 
 #python test_mrc.py \

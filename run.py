@@ -13,11 +13,11 @@ import torch
 from tqdm import tqdm
 from torch.utils.data import TensorDataset, DataLoader
 
-from src.preprocess.evaluate import get_eval
-from src.tools.google_albert_pytorch_modeling import AlbertConfig, AlbertForMRC
-from src.tools.pytorch_modeling import BertConfig, BertForQuestionAnswering, ALBertConfig, ALBertForQA
-from src.tools import official_tokenization as tokenization, utils
-from src.tools.pytorch_optimization import get_optimization, warmup_linear
+from src.cores.evaluate import get_eval
+from src.libs.google_albert_pytorch_modeling import AlbertConfig, AlbertForMRC
+from src.libs.pytorch_modeling import BertConfig, BertForQuestionAnswering, ALBertConfig, ALBertForQA
+from src.libs import official_tokenization as tokenization, utils
+from src.libs.pytorch_optimization import get_optimization, warmup_linear
 
 
 def evaluate(model, args, eval_examples, eval_features, device, global_steps, best_f1, best_em, best_f1_em):
@@ -120,11 +120,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.task_name.lower() == 'outbreak assistant':
-        from src.preprocess.output import write_predictions
-        from src.preprocess.preprocess import json2features
+        from src.cores.output import write_predictions
+        from src.cores.preprocess import json2features
     elif args.task_name.lower() == 'cmrc2018':
-        from src.preprocess.output import write_predictions
-        from src.preprocess.preprocess import json2features
+        from src.cores.output import write_predictions
+        from src.cores.preprocess import json2features
     else:
         raise NotImplementedError
 
@@ -152,13 +152,13 @@ if __name__ == '__main__':
     tokenizer = tokenization.BertTokenizer(vocab_file=args.vocab_file, do_lower_case=True)
     assert args.vocab_size == len(tokenizer.vocab)
     if not os.path.exists(args.train_dir):
-        json2features(args.train_file, [args.train_dir.replace('_features_', '_examples_'), args.train_dir],
-                      tokenizer, is_training=True,
-                      max_seq_length=args.max_seq_length)
+        json2features(input_file=args.train_file,
+                      output_files=[args.train_dir.replace('_features_', '_examples_'), args.train_dir],
+                      tokenizer=tokenizer, is_training=True, max_seq_length=args.max_seq_length)
 
     if not os.path.exists(args.dev_dir1) or not os.path.exists(args.dev_dir2):
-        json2features(args.dev_file, [args.dev_dir1, args.dev_dir2], tokenizer, is_training=False,
-                      max_seq_length=args.max_seq_length)
+        json2features(input_file=args.dev_file, output_files=[args.dev_dir1, args.dev_dir2], tokenizer=tokenizer,
+                      is_training=False, max_seq_length=args.max_seq_length)
 
     train_features = json.load(open(args.train_dir, 'r'))
     dev_examples = json.load(open(args.dev_dir1, 'r'))
@@ -203,7 +203,7 @@ if __name__ == '__main__':
         if 'albert' not in args.init_restore_dir:
             model = BertForQuestionAnswering(bert_config)
         else:
-            if 'albert' in args.init_restore_dir:
+            if 'google' in args.init_restore_dir:
                 model = AlbertForMRC(bert_config)
             else:
                 model = ALBertForQA(bert_config, dropout_rate=args.dropout)
