@@ -3,6 +3,7 @@
 CURRENT_DIR=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
 export MODEL_NAME=albert_xlarge
 export DATA_DIR=$CURRENT_DIR/data
+export FOLD_DIR=$DATA_DIR/fold
 export INPUT_DIR=$DATA_DIR/input
 export OUTPUT_DIR=$DATA_DIR/output
 export BERT_DIR=$DATA_DIR/prev_trained_model/$MODEL_NAME
@@ -14,7 +15,7 @@ export BERT_DIR=$DATA_DIR/prev_trained_model/$MODEL_NAME
 #  --is_albert \
 
 #TASK_NAME='CMRC2018'
-TASK_NAME="Outbreak Assistant"
+TASK_NAME="Outbreak_Assistant"
 python run.py \
   --gpu_ids="0" \
   --train_epochs=2 \
@@ -26,11 +27,11 @@ python run.py \
   --vocab_file=$BERT_DIR/vocab_chinese.txt \
   --bert_config_file=$BERT_DIR/albert_config.json \
   --init_restore_dir=$BERT_DIR/pytorch_albert_model.pth \
-  --train_file=$INPUT_DIR/train.json \
-  --dev_file=$INPUT_DIR/dev.json \
-  --train_dir=$INPUT_DIR/train_features.json \
-  --dev_dir1=$INPUT_DIR/dev_examples.json \
-  --dev_dir2=$INPUT_DIR/dev_features.json \
+  --train_file=$FOLD_DIR/train.json \
+  --dev_file=$FOLD_DIR/dev.json \
+  --train_dir=$FOLD_DIR/train_features.json \
+  --dev_dir1=$FOLD_DIR/dev_examples.json \
+  --dev_dir2=$FOLD_DIR/dev_features.json \
   --checkpoint_dir=$OUTPUT_DIR/$TASK_NAME/$MODEL_NAME/
 
 #python test_mrc.py \

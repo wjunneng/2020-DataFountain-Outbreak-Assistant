@@ -119,7 +119,7 @@ if __name__ == '__main__':
     # use some global vars for convenience
     args = parser.parse_args()
 
-    if args.task_name.lower() == 'outbreak assistant':
+    if args.task_name.lower() == 'outbreak_assistant':
         from src.cores.output import write_predictions
         from src.cores.preprocess import json2features
     elif args.task_name.lower() == 'cmrc2018':
@@ -151,6 +151,7 @@ if __name__ == '__main__':
     print('loading data...')
     tokenizer = tokenization.BertTokenizer(vocab_file=args.vocab_file, do_lower_case=True)
     assert args.vocab_size == len(tokenizer.vocab)
+
     if not os.path.exists(args.train_dir):
         json2features(input_file=args.train_file,
                       output_files=[args.train_dir.replace('_features_', '_examples_'), args.train_dir],
@@ -187,9 +188,8 @@ if __name__ == '__main__':
     for seed_ in args.seed:
         best_f1, best_em = 0, 0
         with open(args.log_file, 'a') as aw:
-            aw.write('===================================' +
-                     'SEED:' + str(seed_)
-                     + '===================================' + '\n')
+            aw.write('===================================' + 'SEED:' + str(
+                seed_) + '===================================' + '\n')
         print('SEED:', seed_)
 
         random.seed(seed_)

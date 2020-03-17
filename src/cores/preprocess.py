@@ -85,9 +85,9 @@ def _check_is_max_context(doc_spans, cur_span_index, position):
 
 def json2features(input_file, output_files, tokenizer, is_training=False, repeat_limit=3, max_query_length=64,
                   max_seq_length=512, doc_stride=128):
+    train_data = []
     with open(input_file, 'r') as f:
-        train_data = json.load(f)
-        train_data = train_data['data']
+        train_data = f.readlines()
 
     def _is_chinese_char(cp):
         if ((cp >= 0x4E00 and cp <= 0x9FFF) or
@@ -135,74 +135,71 @@ def json2features(input_file, output_files, tokenizer, is_training=False, repeat
     examples = []
     mis_match = 0
     for article in tqdm(train_data):
-        for para in article['paragraphs']:
-            # 内容文档
-            context = para['context']
-            context_chs = _tokenize_chinese_chars(context)
-            doc_tokens = []
-            char_to_word_offset = []
-            prev_is_whitespace = True
-            for c in context_chs:
-                if is_whitespace(c):
-                    prev_is_whitespace = True
+        # 内容文档
+        context = article['context']
+        context_chs = _tokenize_chinese_chars(context)
+        doc_tokens = []
+        char_to_word_offset = []
+        prev_is_whitespace = True
+        for c in context_chs:
+            if is_whitespace(c):
+                prev_is_whitespace = True
+            else:
+                if prev_is_whitespace:
+                    doc_tokens.append(c)
                 else:
-                    if prev_is_whitespace:
-                        doc_tokens.append(c)
-                    else:
-                        doc_tokens[-1] += c
-                    prev_is_whitespace = False
-                if c != SPIECE_UNDERLINE:
-                    char_to_word_offset.append(len(doc_tokens) - 1)
+                    doc_tokens[-1] += c
+                prev_is_whitespace = False
+            if c != SPIECE_UNDERLINE:
+                char_to_word_offset.append(len(doc_tokens) - 1)
 
-            # 多个问题与答案
-            for qas in para['qas']:
-                # 问题id
-                qid = qas['id']
-                # 问题
-                ques_text = qas['question']
-                # 答案
-                ans_text = qas['answers'][0]['text']
+        # 问题id
+        qid = article['id']
+        # 问题
+        ques_text = article['question']
+        # 答案
+        ans_text = article['answer']['text']
 
-                start_position_final = None
-                end_position_final = None
-                if is_training:
-                    count_i = 0
-                    # 答案在文档中的开始索引
-                    start_position = qas['answers'][0]['answer_start']
-                    # 答案在文档中的结束索引
-                    end_position = start_position + len(ans_text) - 1
+        start_position_final = None
+        end_position_final = None
+        if is_training:
+            count_i = 0
+            # 答案在文档中的开始索引
+            start_position = qas['answers'][0]['answer_start']
+            # 答案在文档中的结束索引
+            end_position = start_position + len(ans_text) - 1
 
-                    # 限制匹配长度
-                    while context[start_position:end_position + 1] != ans_text and count_i < repeat_limit:
-                        start_position -= 1
-                        end_position -= 1
-                        count_i += 1
+            # 限制匹配长度
+            while context[start_position:end_position + 1] != ans_text and count_i < repeat_limit:
+                start_position -= 1
+                end_position -= 1
+                count_i += 1
 
-                    while context[start_position] == " " or context[start_position] == "\t" or \
-                            context[start_position] == "\r" or context[start_position] == "\n":
-                        start_position += 1
+            while context[start_position] == " " or context[start_position] == "\t" or \
+                    context[start_position] == "\r" or context[start_position] == "\n":
+                start_position += 1
 
-                    start_position_final = char_to_word_offset[start_position]
-                    end_position_final = char_to_word_offset[end_position]
+            start_position_final = char_to_word_offset[start_position]
+            end_position_final = char_to_word_offset[end_position]
 
-                    if doc_tokens[start_position_final] in {"。", "，", "：", ":", ".", ","}:
-                        start_position_final += 1
+            if doc_tokens[start_position_final] in {"。", "，", "：", ":", ".", ","}:
+                start_position_final += 1
 
-                    actual_text = "".join(doc_tokens[start_position_final:(end_position_final + 1)])
-                    cleaned_answer_text = "".join(tokenization.whitespace_tokenize(ans_text))
+            actual_text = "".join(doc_tokens[start_position_final:(end_position_final + 1)])
+            cleaned_answer_text = "".join(tokenization.whitespace_tokenize(ans_text))
 
-                    if actual_text != cleaned_answer_text:
-                        print(actual_text, 'V.S', cleaned_answer_text)
-                        mis_match += 1
-                        # ipdb.set_trace()
+            if actual_text != cleaned_answer_text:
+                print(actual_text, 'V.S', cleaned_answer_text)
+                mis_match += 1
+                # ipdb.set_trace()
 
-                examples.append({'doc_tokens': doc_tokens,
-                                 'orig_answer_text': ans_text,
-                                 'qid': qid,
-                                 'question': ques_text,
-                                 'answer': ans_text,
-                                 'start_position': start_position_final,
-                                 'end_position': end_position_final})
+        examples.append({'doc_tokens': doc_tokens,
+                         'orig_answer_text': ans_text,
+                         'qid': qid,
+                         'question': ques_text,
+                         'answer': ans_text,
+                         'start_position': start_position_final,
+                         'end_position': end_position_final})
 
     print('examples num:', len(examples))
     print('mis_match:', mis_match)
