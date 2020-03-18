@@ -165,7 +165,7 @@ def json2features(input_file, output_files, tokenizer, is_training=False, repeat
         if is_training:
             count_i = 0
             # 答案在文档中的开始索引
-            start_position = qas['answers'][0]['answer_start']
+            start_position = article['answer']['span'][0]
             # 答案在文档中的结束索引
             end_position = start_position + len(ans_text) - 1
 
