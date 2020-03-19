@@ -1,9 +1,13 @@
+# -*- coding:utf-8 -*-
 import collections
 import os
 import re
-from glob import glob
 import torch
+import json
+from glob import glob
+from collections import Counter
 
+import pandas as pd
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
@@ -145,3 +149,140 @@ def torch_save_model(model, output_dir, scores, max_save_num=1):
     torch.save(model_to_save.state_dict(),
                os.path.join(output_dir, save_prex))
     print("Saving model checkpoint to %s", output_dir)
+
+
+def stat_length(filename):
+    """
+    :param filename:
+    :return:
+    """
+    df = pd.read_csv(filename, sep='\t', error_bad_lines=False)
+    df['context_length'] = df['text'].apply(len)
+    print(f"context length: {df['context_length'].mean()}")
+    print(f"context length: {df['context_length'].max()}")
+    print(f"context length: {df['context_length'].min()}")
+
+
+def load_context(filename):
+    """
+    :param filename:
+    :return:
+    """
+    docid2context = {}
+    f = True
+    for line in open(filename):
+        if f:
+            f = False
+            continue
+        r = line.strip().split('\t')
+        # 注意 text列 可能会被划分多个
+        docid2context[r[0]] = '\t'.join(r[1:])
+    return docid2context
+
+
+def metric_max_over_ground_truths(metric_fn, prediction, ground_truths):
+    """
+    This function calculates and returns the precision, recall and f1-score
+    Args:
+        metric_fn: metric function pointer which calculates scores according to corresponding logic.
+        prediction: prediction string or list to be matched
+        ground_truth: golden string or list reference
+    Returns:
+        floats of (p, r, f1)
+    Raises:
+        None
+    """
+    scores_for_ground_truths = []
+    for ground_truth in ground_truths:
+        score = metric_fn(prediction, ground_truth)
+        scores_for_ground_truths.append(score)
+    return max(scores_for_ground_truths)
+
+
+def precision_recall_f1(prediction, ground_truth):
+    """
+    This function calculates and returns the precision, recall and f1-score
+    Args:
+        prediction: prediction string or list to be matched
+        ground_truth: golden string or list reference
+    Returns:
+        floats of (p, r, f1)
+    Raises:
+        None
+    """
+    if not isinstance(prediction, list):
+        prediction_tokens = prediction.split()
+    else:
+        prediction_tokens = prediction
+    if not isinstance(ground_truth, list):
+        ground_truth_tokens = ground_truth.split()
+    else:
+        ground_truth_tokens = ground_truth
+    common = Counter(prediction_tokens) & Counter(ground_truth_tokens)
+    num_same = sum(common.values())
+    if num_same == 0:
+        return 0, 0, 0
+    p = 1.0 * num_same / len(prediction_tokens)
+    r = 1.0 * num_same / len(ground_truth_tokens)
+    f1 = (2 * p * r) / (p + r)
+    return p, r, f1
+
+
+def f1_score(prediction, ground_truth):
+    """
+    This function calculates and returns the f1-score
+    Args:
+        prediction: prediction string or list to be matched
+        ground_truth: golden string or list reference
+    Returns:
+        floats of f1
+    Raises:
+        None
+    """
+    return precision_recall_f1(prediction, ground_truth)[2]
+
+
+def re_find_fake_answer(line):
+    """
+    寻找开始/结束位置
+    :param line:
+    :return:
+    """
+    sample = json.loads(line)
+    best_match_score = 0
+    best_match_span = [-1, -1]
+    if sample is not None:
+        for start_tidx in range(len(sample['context'])):
+            if sample['context'][start_tidx] not in sample['answer']['text']:
+                continue
+            for end_tidx in range(len(sample['context']) - 1, start_tidx - 1, -1):
+                span_tokens = sample['context'][start_tidx: end_tidx + 1]
+                match_score = metric_max_over_ground_truths(f1_score, span_tokens,
+                                                            [sample['answer']['text']])
+                if match_score > best_match_score:
+                    best_match_span = [start_tidx, end_tidx]
+                    best_match_score = match_score
+        if best_match_score > 0:
+            sample['answer']['span'] = best_match_span
+
+    return sample
+
+
+def re_find_fake_answer_I(line):
+    """
+    寻找开始/结束位置
+    :param line:
+    :return:
+    """
+    sample = json.loads(line)
+    if sample is not None:
+        context = sample['context']
+        answer = sample['answer']['text']
+        if answer in context:
+            start_index = context.index(answer)
+            end_index = start_index + len(answer) - 1
+            sample['answer']['span'] = [start_index, end_index]
+        else:
+            sample['answer']['span'] = [-1, -1]
+
+    return sample

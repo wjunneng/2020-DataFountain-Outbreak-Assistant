@@ -79,24 +79,21 @@ def evaluate(ground_truth_file, prediction_file):
     em = 0
     total_count = 0
     skip_count = 0
-    for instance in ground_truth_file["data"]:
-        # context_id   = instance['context_id'].strip()
-        # context_text = instance['context_text'].strip()
-        for para in instance["paragraphs"]:
-            for qas in para['qas']:
-                total_count += 1
-                query_id = qas['id'].strip()
-                query_text = qas['question'].strip()
-                answers = [x["text"] for x in qas['answers']]
+    for article in ground_truth_file.readlines():
+        article = json.loads(article)
+        total_count += 1
+        question_id = article['id'].strip()
+        question_text = article['question'].strip()
+        answer = [article['answer']['text']]
 
-                if query_id not in prediction_file:
-                    print('Unanswered question: {}\n'.format(query_id))
-                    skip_count += 1
-                    continue
+        if question_id not in prediction_file:
+            print('Unanswered question: {}\n'.format(question_id))
+            skip_count += 1
+            continue
 
-                prediction = str(prediction_file[query_id])
-                f1 += calc_f1_score(answers, prediction)
-                em += calc_em_score(answers, prediction)
+        prediction = str(prediction_file[question_id])
+        f1 += calc_f1_score(answer, prediction)
+        em += calc_em_score(answer, prediction)
 
     f1_score = 100.0 * f1 / total_count
     em_score = 100.0 * em / total_count
@@ -184,7 +181,7 @@ def calc_em_score(answers, prediction):
 
 
 def get_eval(original_file, prediction_file):
-    ground_truth_file = json.load(open(original_file, 'r'))
+    ground_truth_file = open(original_file, 'r')
     prediction_file = json.load(open(prediction_file, 'r'))
     F1, EM, TOTAL, SKIP = evaluate(ground_truth_file, prediction_file)
     AVG = (EM + F1) * 0.5

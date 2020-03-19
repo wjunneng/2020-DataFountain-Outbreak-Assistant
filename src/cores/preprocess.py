@@ -135,6 +135,7 @@ def json2features(input_file, output_files, tokenizer, is_training=False, repeat
     examples = []
     mis_match = 0
     for article in tqdm(train_data):
+        article = json.loads(article)
         # 内容文档
         context = article['context']
         context_chs = _tokenize_chinese_chars(context)

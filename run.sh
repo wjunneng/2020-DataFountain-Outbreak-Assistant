@@ -19,10 +19,11 @@ TASK_NAME="Outbreak_Assistant"
 python run.py \
   --gpu_ids="0" \
   --train_epochs=2 \
-  --n_batch=2 \
+  --eval_epochs=0.0005 \
+  --n_batch=6 \
   --lr=3e-5 \
   --warmup_rate=0.1 \
-  --max_seq_length=128 \
+  --max_seq_length=96 \
   --task_name=$TASK_NAME \
   --vocab_file=$BERT_DIR/vocab_chinese.txt \
   --bert_config_file=$BERT_DIR/albert_config.json \
