@@ -180,6 +180,18 @@ def load_context(filename):
     return docid2context
 
 
+def load_query_docids(filename):
+    """
+    :param filename:
+    :return:
+    """
+    question2docid = {}
+    for line in open(filename):
+        question2docid[line.split('\t')[0]] = line.split('\t')[1].split(',')[0]
+
+    return question2docid
+
+
 def metric_max_over_ground_truths(metric_fn, prediction, ground_truths):
     """
     This function calculates and returns the precision, recall and f1-score

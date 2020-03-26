@@ -159,7 +159,7 @@ def json2features(input_file, output_files, tokenizer, is_training=False, repeat
         # 问题
         ques_text = article['question']
         # 答案
-        ans_text = article['answer']['text']
+        ans_text = article['answer']['text'] if 'answer' in article else None
 
         start_position_final = None
         end_position_final = None

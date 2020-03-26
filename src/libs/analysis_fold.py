@@ -13,7 +13,7 @@ import json
 random.seed(1)
 
 from src.confs import arguments
-from src.libs.utils import re_find_fake_answer, re_find_fake_answer_I, load_context
+from src.libs.utils import re_find_fake_answer, re_find_fake_answer_I, load_context, load_query_docids
 
 if not os.path.exists(arguments.fold_dir):
     os.makedirs(arguments.fold_dir)
@@ -53,8 +53,11 @@ def analyzefile(file):
 
 def generate_train_dev_file(context_path, train_path, train_0301_path, dev_0301_path):
     """
+    生成训练/验证集
     :param context_path:
     :param train_path:
+    :param train_0301_path:
+    :param dev_0301_path:
     :return:
     """
     # docid2context: docid text
@@ -70,12 +73,10 @@ def generate_train_dev_file(context_path, train_path, train_0301_path, dev_0301_
     train_docid_set = set()
     dev_docid_set = set()
 
-    index = 0
     # line: id	docid	question	answer
     with open(file=train_path, mode='r') as file:
         first_line = True
         for line in file:
-            index += 1
             if first_line:
                 first_line = False
                 continue
@@ -121,9 +122,47 @@ def generate_train_dev_file(context_path, train_path, train_0301_path, dev_0301_
                 rv = re_find_fake_answer_I(json.dumps(rv))
                 train_0301.write(json.dumps(rv, ensure_ascii=False) + '\n')
 
+    train_0301.close()
+    dev_0301.close()
 
-def generate_test():
-    pass
+
+def generate_test(context_path, test_path, test_0301_path, query_docids_path):
+    """
+    生成测试集
+    :param context_path:
+    :param test_path:
+    :param test_0301_path:
+    :param query_docids_path:
+    :return:
+    """
+    # docid2context: docid text
+    docid2context = load_context(context_path)
+    question2docid = load_query_docids(query_docids_path)
+
+    if os.path.exists(test_0301_path):
+        os.remove(test_0301_path)
+
+    test_0301 = open(test_0301_path, 'a')
+
+    with open(file=test_path, mode='r') as file:
+        first_line = True
+        for line in file:
+            if first_line:
+                first_line = False
+                continue
+
+            line = line.strip().split('\t')
+            assert len(line) == 2
+            id = line[0]
+            question = line[1]
+            docid = question2docid[question]
+            context = docid2context[docid]
+
+            rv = {'id': id, 'docid': docid, 'context': context, 'question': question}
+
+            test_0301.write(json.dumps(rv, ensure_ascii=False) + '\n')
+
+    test_0301.close()
 
 
 if __name__ == '__main__':
@@ -138,6 +177,11 @@ if __name__ == '__main__':
     # # max / mean / min
     # stat_length(filename=arguments.context_path)
 
-    # 速度特别慢
-    generate_train_dev_file(context_path=arguments.context_path, train_path=arguments.train_path,
-                            train_0301_path=arguments.train_0301_path, dev_0301_path=arguments.dev_0301_path)
+    # 生成训练验证集 速度特别慢
+    # generate_train_dev_file(context_path=arguments.context_path, train_path=arguments.train_path,
+    #                         train_0301_path=arguments.train_0301_path, dev_0301_path=arguments.dev_0301_path)
+
+    # 生成测试集
+    generate_test(context_path=arguments.context_path, test_path=arguments.test_path,
+                  test_0301_path=arguments.test_0301_path,
+                  query_docids_path=arguments.query_docids_path)

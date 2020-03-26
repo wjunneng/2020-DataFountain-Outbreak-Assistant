@@ -20,6 +20,8 @@ train_path = os.path.join(input_dir, 'NCPPolicies_train_20200301.csv')
 test_path = os.path.join(input_dir, 'NCPPolicies_test.csv')
 # id	docid	answer
 submit_path = os.path.join(input_dir, 'submit_example.csv')
+# question docid/docid/..
+query_docids_path = os.path.join(input_dir, 'es_query_docids_v1.csv')
 
 # -* generate data *-
 output_dir = os.path.join(data_dir, 'output')
