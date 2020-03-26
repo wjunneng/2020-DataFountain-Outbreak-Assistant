@@ -25,7 +25,17 @@ submit_path = os.path.join(input_dir, 'submit_example.csv')
 output_dir = os.path.join(data_dir, 'output')
 fold_dir = os.path.join(data_dir, 'fold')
 fold_report_path = os.path.join(fold_dir, 'report.txt')
+local_dir = os.path.join(data_dir, 'local')
+local_report_path = os.path.join(local_dir, 'report.txt')
 
-train_0301_path = os.path.join(fold_dir, 'train.json')
-dev_0301_path = os.path.join(fold_dir, 'dev.json')
-test_0301_path = os.path.join(fold_dir, 'test.json')
+local = True
+if local:
+    if os.path.exists(local_dir) is False:
+        os.makedirs(local_dir)
+    train_0301_path = os.path.join(local_dir, 'train.json')
+    dev_0301_path = os.path.join(local_dir, 'dev.json')
+    test_0301_path = os.path.join(local_dir, 'test.json')
+else:
+    train_0301_path = os.path.join(fold_dir, 'train.json')
+    dev_0301_path = os.path.join(fold_dir, 'dev.json')
+    test_0301_path = os.path.join(fold_dir, 'test.json')

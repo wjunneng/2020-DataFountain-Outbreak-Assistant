@@ -119,10 +119,7 @@ if __name__ == '__main__':
     # use some global vars for convenience
     args = parser.parse_args()
 
-    if args.task_name.lower() == 'outbreak_assistant':
-        from src.cores.output import write_predictions
-        from src.cores.preprocess import json2features
-    elif args.task_name.lower() == 'cmrc2018':
+    if args.task_name.lower() in ['cmrc2018', 'outbreak_assistant']:
         from src.cores.output import write_predictions
         from src.cores.preprocess import json2features
     else:
@@ -156,11 +153,16 @@ if __name__ == '__main__':
     if not os.path.exists(args.train_dir):
         json2features(input_file=args.train_file,
                       output_files=[args.train_dir.replace('_features_', '_examples_'), args.train_dir],
-                      tokenizer=tokenizer, is_training=True, max_seq_length=args.max_seq_length)
+                      tokenizer=tokenizer,
+                      is_training=True,
+                      max_seq_length=args.max_seq_length)
 
     if not os.path.exists(args.dev_dir1) or not os.path.exists(args.dev_dir2):
-        json2features(input_file=args.dev_file, output_files=[args.dev_dir1, args.dev_dir2], tokenizer=tokenizer,
-                      is_training=False, max_seq_length=args.max_seq_length)
+        json2features(input_file=args.dev_file,
+                      output_files=[args.dev_dir1, args.dev_dir2],
+                      tokenizer=tokenizer,
+                      is_training=False,
+                      max_seq_length=args.max_seq_length)
 
     train_features = json.load(open(args.train_dir, 'r'))
     dev_examples = json.load(open(args.dev_dir1, 'r'))

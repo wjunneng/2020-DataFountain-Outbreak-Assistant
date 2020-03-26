@@ -92,6 +92,9 @@ def generate_train_dev_file(context_path, train_path, train_0301_path, dev_0301_
                 rv = {'id': id, 'docid': docid, 'context': docid2context[docid], 'question': question,
                       'answer': {'text': answer}}
 
+                if arguments.local and len(train_docid_set) == 600:
+                    break
+
                 # type_1
                 # rv = re_find_fake_answer(json.dumps(rv))
                 # type_2
