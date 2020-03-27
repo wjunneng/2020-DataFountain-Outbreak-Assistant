@@ -6,7 +6,8 @@ os.chdir(sys.path[0])
 
 sys.path.append(os.path.abspath('.'))
 
-project_dir = '/home/wjunneng/Ubuntu/2020-DataFountain-Outbreak-Assistant'
+# project_dir = '/home/wjunneng/Ubuntu/2020-DataFountain-Outbreak-Assistant'
+project_dir = '/content/Ubuntu/2020-DataFountain-Outbreak-Assistant'
 
 # -* original data *-
 data_dir = os.path.join(project_dir, 'data')

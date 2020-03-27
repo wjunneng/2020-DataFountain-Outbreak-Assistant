@@ -37,7 +37,7 @@ def evaluate(model, args, eval_examples, eval_features, device, global_steps, be
     model.eval()
     all_results = []
     print("Start evaluating")
-    for input_ids, input_mask, segment_ids, example_indices in tqdm(eval_dataloader, desc="Evaluating"):
+    for input_ids, input_mask, segment_ids, example_indices in eval_dataloader:
         input_ids = input_ids.to(device)
         input_mask = input_mask.to(device)
         segment_ids = segment_ids.to(device)
