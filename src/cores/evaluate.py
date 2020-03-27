@@ -15,6 +15,8 @@ from collections import OrderedDict
 
 import nltk
 
+nltk.download('punkt')
+
 
 # split Chinese with English
 def mixed_segmentation(in_str, rm_punc=False):
