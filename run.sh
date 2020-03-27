@@ -20,10 +20,10 @@ python run.py \
   --gpu_ids="0" \
   --train_epochs=2 \
   --eval_epochs=0.0005 \
-  --n_batch=6 \
+  --n_batch=20 \
   --lr=3e-5 \
   --warmup_rate=0.1 \
-  --max_seq_length=96 \
+  --max_seq_length=128 \
   --task_name=$TASK_NAME \
   --vocab_file=$BERT_DIR/vocab_chinese.txt \
   --bert_config_file=$BERT_DIR/albert_config.json \
@@ -35,15 +35,15 @@ python run.py \
   --dev_dir2=$FOLD_DIR/dev_features.json \
   --checkpoint_dir=$OUTPUT_DIR/$TASK_NAME/$MODEL_NAME/
 
-#python test_mrc.py \
-#  --gpu_ids="0" \
-#  --n_batch=8 \
-#  --max_seq_length=512 \
-#  --task_name=$TASK_NAME \
-#  --vocab_file=$BERT_DIR/vocab.txt \
-#  --bert_config_file=$BERT_DIR/bert_config.json \
-#  --init_restore_dir=$OUTPUT_DIR/$TASK_NAME/$MODEL_NAME/ \
-#  --output_dir=$OUTPUT_DIR/$TASK_NAME/$MODEL_NAME/ \
-#  --test_dir1=$DATA_DIR/$TASK_NAME/test_examples.json \
-#  --test_dir2=$DATA_DIR/$TASK_NAME/test_features.json \
-#  --test_file=$DATA_DIR/$TASK_NAME/cmrc2018_test_2k.json \
+python run_test.py \
+  --gpu_ids="0" \
+  --n_batch=100 \
+  --max_seq_length=128 \
+  --task_name=$TASK_NAME \
+  --vocab_file=$BERT_DIR/vocab_chinese.txt \
+  --bert_config_file=$BERT_DIR/albert_config.json \
+  --init_restore_dir=$OUTPUT_DIR/$TASK_NAME/$MODEL_NAME/ \
+  --output_dir=$OUTPUT_DIR/$TASK_NAME/$MODEL_NAME/ \
+  --test_dir1=$FOLD_DIR/test_examples.json \
+  --test_dir2=$FOLD_DIR/test_features.json \
+  --test_file=$FOLD_DIR/test.json

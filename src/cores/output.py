@@ -1,7 +1,9 @@
+# -*- coding:utf-8 -*-
 import collections
 import json
 import math
-
+import os
+import pandas as pd
 from tqdm import tqdm
 
 from src.libs.official_tokenization import BasicTokenizer
@@ -160,8 +162,8 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
                       max_answer_length, do_lower_case, output_prediction_file,
                       output_nbest_file, version_2_with_negative=False, null_score_diff_threshold=0.):
     """Write final predictions to the json file and log-odds of null if needed."""
-    print("Writing predictions to: %s" % (output_prediction_file))
-    print("Writing nbest to: %s" % (output_nbest_file))
+    print("Writing predictions to: %s" % output_prediction_file)
+    print("Writing nbest to: %s" % output_nbest_file)
 
     example_index_to_features = collections.defaultdict(list)
     for feature in all_features:
@@ -251,7 +253,7 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
                 break
             feature = features[pred.feature_index]
             if pred.start_index > 0:  # this is a non-null prediction
-                tok_tokens = feature['tokens'][pred.start_index:(pred.end_index + 1)]
+                tok_tokens = feature["tokens"][pred.start_index:(pred.end_index + 1)]
                 orig_doc_start = feature['token_to_orig_map'][str(pred.start_index)]
                 orig_doc_end = feature['token_to_orig_map'][str(pred.end_index)]
                 orig_tokens = example['doc_tokens'][orig_doc_start:(orig_doc_end + 1)]
@@ -292,12 +294,12 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
             # In very rare edge cases we could only have single null prediction.
             # So we just create a nonce prediction in this case to avoid failure.
             if len(nbest) == 1:
-                nbest.insert(0, _NbestPrediction(text="empty", start_logit=0.0, end_logit=0.0))
+                nbest.insert(0, _NbestPrediction(text="", start_logit=0.0, end_logit=0.0))
 
         # In very rare edge cases we could have no valid predictions. So we
         # just create a nonce prediction in this case to avoid failure.
         if not nbest:
-            nbest.append(_NbestPrediction(text="empty", start_logit=0.0, end_logit=0.0))
+            nbest.append(_NbestPrediction(text="", start_logit=0.0, end_logit=0.0))
 
         assert len(nbest) >= 1
 
@@ -334,6 +336,14 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
             else:
                 all_predictions[example['qid']] = best_non_null_entry.text
             all_nbest_json[example['qid']] = nbest_json
+
+    predictions = pd.Series(all_predictions).to_frame()
+    predictions.columns = ['answer']
+    predictions['qid'] = predictions.index
+    predictions['docid'] = ['123123'] * predictions.shape[0]
+
+    predictions[['qid', 'docid', 'answer']].to_csv(os.path.splitext(output_prediction_file)[0] + '.csv', index=None,
+                                                   encoding='utf-8')
 
     with open(output_prediction_file, "w") as writer:
         writer.write(json.dumps(all_predictions, indent=4, ensure_ascii=False) + "\n")
