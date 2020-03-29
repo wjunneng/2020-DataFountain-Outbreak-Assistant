@@ -342,8 +342,10 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
     predictions['qid'] = predictions.index
     predictions['docid'] = ['123123'] * predictions.shape[0]
 
-    predictions[['qid', 'docid', 'answer']].to_csv(os.path.splitext(output_prediction_file)[0] + '.csv', index=None,
-                                                   encoding='utf-8')
+    predictions = predictions[['qid', 'docid', 'answer']]
+    predictions.fillna('-', inplace=True)
+    predictions.to_csv(os.path.splitext(output_prediction_file)[0] + '.csv', index=None,
+                       encoding='utf-8', sep='\t')
 
     with open(output_prediction_file, "w") as writer:
         writer.write(json.dumps(all_predictions, indent=4, ensure_ascii=False) + "\n")

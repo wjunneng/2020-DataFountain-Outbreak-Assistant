@@ -9,12 +9,12 @@ from collections import Counter
 
 import pandas as pd
 import tensorflow as tf
-import tensorflow.contrib.slim as slim
+# import tensorflow.contrib.slim as slim
 
 
-def show_all_variables(rank=0):
-    model_vars = tf.trainable_variables()
-    slim.model_analyzer.analyze_vars(model_vars, print_info=True if rank == 0 else False)
+# def show_all_variables(rank=0):
+#     model_vars = tf.trainable_variables()
+#     slim.model_analyzer.analyze_vars(model_vars, print_info=True if rank == 0 else False)
 
 
 # import ipdb
