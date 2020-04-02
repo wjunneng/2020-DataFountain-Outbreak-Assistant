@@ -178,10 +178,9 @@ if __name__ == '__main__':
     # stat_length(filename=arguments.context_path)
 
     # 生成训练验证集 速度特别慢
-    # generate_train_dev_file(context_path=arguments.context_path, train_path=arguments.train_path,
-    #                         train_0301_path=arguments.train_0301_path, dev_0301_path=arguments.dev_0301_path)
+    generate_train_dev_file(context_path=arguments.context_path, train_path=arguments.train_path,
+                            train_0301_path=arguments.train_0301_path, dev_0301_path=arguments.dev_0301_path)
 
     # 生成测试集
     generate_test(context_path=arguments.context_path, test_path=arguments.test_path,
-                  test_0301_path=arguments.test_0301_path,
-                  query_docids_path=arguments.query_docids_path)
+                  test_0301_path=arguments.test_0301_path, query_docids_path=arguments.query_docids_path)

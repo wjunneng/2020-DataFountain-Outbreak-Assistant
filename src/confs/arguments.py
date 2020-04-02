@@ -6,8 +6,15 @@ os.chdir(sys.path[0])
 
 sys.path.append(os.path.abspath('.'))
 
+# ########################### 线下
+# local = True
 # project_dir = '/home/wjunneng/Ubuntu/2020-DataFountain-Outbreak-Assistant'
+# ########################### 线下
+
+# ########################### 线上
+local = False
 project_dir = '/content/Ubuntu/2020-DataFountain-Outbreak-Assistant'
+# ########################### 线上
 
 # -* original data *-
 data_dir = os.path.join(project_dir, 'data')
@@ -31,7 +38,6 @@ fold_report_path = os.path.join(fold_dir, 'report.txt')
 local_dir = os.path.join(data_dir, 'local')
 local_report_path = os.path.join(local_dir, 'report.txt')
 
-local = True
 if local:
     if os.path.exists(local_dir) is False:
         os.makedirs(local_dir)

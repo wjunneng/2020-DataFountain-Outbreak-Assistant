@@ -23,7 +23,7 @@ python run.py \
   --n_batch=4 \
   --lr=3e-5 \
   --warmup_rate=0.1 \
-  --max_seq_length=1024 \
+  --max_seq_length=512 \
   --task_name=$TASK_NAME \
   --vocab_file=$BERT_DIR/vocab_chinese.txt \
   --bert_config_file=$BERT_DIR/albert_config.json \
@@ -38,7 +38,7 @@ python run.py \
 python run_test.py \
   --gpu_ids="0" \
   --n_batch=4 \
-  --max_seq_length=1024 \
+  --max_seq_length=512 \
   --task_name=$TASK_NAME \
   --vocab_file=$BERT_DIR/vocab_chinese.txt \
   --bert_config_file=$BERT_DIR/albert_config.json \
