@@ -2,6 +2,7 @@
 import os
 import sys
 
+sys.path.append('..')
 os.chdir(sys.path[0])
 import json
 import argparse

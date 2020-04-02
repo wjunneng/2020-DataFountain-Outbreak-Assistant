@@ -3,6 +3,7 @@
 CURRENT_DIR=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
 export MODEL_NAME=albert_xlarge
 export DATA_DIR=$CURRENT_DIR/data
+export SRC_DIR=$CURRENT_DIR/src
 export FOLD_DIR=$DATA_DIR/fold
 export INPUT_DIR=$DATA_DIR/input
 export OUTPUT_DIR=$DATA_DIR/output
@@ -16,7 +17,7 @@ export BERT_DIR=$DATA_DIR/prev_trained_model/$MODEL_NAME
 
 #TASK_NAME='CMRC2018'
 TASK_NAME="Outbreak_Assistant"
-python run.py \
+python $SRC_DIR/run.py \
   --gpu_ids="0" \
   --train_epochs=2 \
   --eval_epochs=1 \
@@ -35,7 +36,7 @@ python run.py \
   --dev_dir2=$FOLD_DIR/dev_features.json \
   --checkpoint_dir=$OUTPUT_DIR/$TASK_NAME/$MODEL_NAME/
 
-python run_test.py \
+python $SRC_DIR/run_test.py \
   --gpu_ids="0" \
   --n_batch=4 \
   --max_seq_length=512 \
