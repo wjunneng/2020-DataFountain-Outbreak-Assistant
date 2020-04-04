@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import os
 import sys
 
+sys.path.append(os.path.abspath('.'))
 os.chdir(sys.path[0])
 
 import torch
@@ -99,24 +100,30 @@ class Feature(object):
 
 
 def read_examples(input_file, doc_file, is_training, k=1, es_index="passages", es_ip="localhost"):
+    df = None
     if os.path.splitext(input_file)[-1] == '.csv':
         df = pd.read_csv(input_file)
     elif os.path.splitext(input_file)[-1] == '.json':
         df = get_data_frame(input_file)
     doc = pd.read_csv(doc_file)
-    if is_training == 1:  # train
+    # train
+    if is_training == 1:
         examples = []
         for val in df[['id', 'docid', 'question', 'start_index', 'end_index']].values:
             passage = doc[doc['docid'] == val[1]].values[0][-1]
+            # [start, end]闭区间
             examples.append(InputExample(guid=val[0], docid=val[1], text_a=passage, text_b=val[2], start=val[3],
-                                         end=val[-1] - 1))  # [start, end]闭区间
-    elif is_training == 2:  # eval
+                                         end=val[-1] - 1))
+    # eval
+    elif is_training == 2:
         examples = []
         for val in df[['id', 'docid', 'question', 'start_index', 'end_index']].values:
             passage = doc[doc['docid'] == val[1]].values[0][-1]
+            # [start, end]闭区间
             examples.append(InputExample(guid=val[0], docid=val[1], text_a=passage, text_b=val[2], start=val[3],
-                                         end=val[-1] - 1))  # [start, end]闭区间
-    else:  # test
+                                         end=val[-1] - 1))
+    # test
+    else:
         obj = ElasticObj(es_index, "_doc", ip=es_ip)
         examples = []
         for val in df[['id', 'question']].values:
@@ -130,10 +137,12 @@ def convert_examples_to_features(example, tokenizer, max_seq_length, max_questio
     # tokenize question
     question_tokens = tokenizer.tokenize(example.text_b)[:max_question_length]
     # tokenize passage & build original to token index
-    passage_words = list(example.text_a)  # original passage text
+    # original passage text
+    passage_words = list(example.text_a)
     original_to_tokenized_index = []
     tokenized_to_original_index = []
-    passage_tokens = []  # tokenized passage text
+    # tokenized passage text
+    passage_tokens = []
     for i, word in enumerate(passage_words):
         original_to_tokenized_index.append(len(passage_tokens))
         sub_tokens = tokenizer.tokenize(word)
@@ -147,14 +156,16 @@ def convert_examples_to_features(example, tokenizer, max_seq_length, max_questio
         end_position = original_to_tokenized_index[example.end]
 
     # split passage_tokens
-    max_doc_length = max_seq_length - len(question_tokens) - 3  # [CLS], [SEP], [SEP]
+    # [CLS], [SEP], [SEP]
+    max_doc_length = max_seq_length - len(question_tokens) - 3
     features = []
     selected_sentenses = []
     start_point = 0
-    for i, token in enumerate(passage_tokens):  # 把文档按照句号拆分为片段
+    # 把文档按照句号拆分为片段
+    for i, token in enumerate(passage_tokens):
         if token == '。' or i == len(passage_tokens) - 1:
-            selected_sentenses.append(
-                {'tokens': passage_tokens[start_point:i + 1], 'start': start_point, 'end': i})  # 闭区间[start, end]
+            # 闭区间[start, end]
+            selected_sentenses.append({'tokens': passage_tokens[start_point:i + 1], 'start': start_point, 'end': i})
             start_point = i + 1
     assert len(selected_sentenses) > 0, f'len(selected_sentenses) is 0!'
     doc_tokens = []
@@ -397,7 +408,8 @@ def convert_examples_to_features(example, tokenizer, max_seq_length, max_questio
 def pre_process(train_features: List[List[Feature]]):
     selected_features = []
     single_answer, multi_answer, has_unknown_sample = 0, 0, 0
-    for index in range(len(train_features)):  # num_examples
+    # num_examples
+    for index in range(len(train_features)):
         annotated_known = list(filter(lambda example: example.label == 'known', train_features[index]))
         assert len(annotated_known) >= 1, f'example dont has answer span!'
         annotated_unknown = list(filter(lambda example: example.label == 'unknown', train_features[index]))
@@ -407,7 +419,8 @@ def pre_process(train_features: List[List[Feature]]):
             single_answer += 1
             if annotated_unknown:
                 has_unknown_sample += 1
-                annotated = (annotated_known + [random.choice(annotated_unknown)])  # 随机选择一个负样本
+                # 随机选择一个负样本
+                annotated = (annotated_known + [random.choice(annotated_unknown)])
             else:
                 annotated = annotated_known
         else:
@@ -488,14 +501,7 @@ class Result(object):
             return False
         return True
 
-    def update(
-            self,
-            examples,
-            start_preds,
-            end_preds,
-            class_preds,
-            k
-    ):
+    def update(self, examples, start_preds, end_preds, class_preds, k):
         # 从分数top k的span中选择合适的span
         start_logits, start_index = torch.topk(start_preds, k, dim=1, largest=True, sorted=True)
         end_logits, end_index = torch.topk(end_preds, k, dim=1, largest=True, sorted=True)

@@ -2,9 +2,8 @@
 import os
 import sys
 
-os.chdir(sys.path[0])
-
 sys.path.append(os.path.abspath('.'))
+os.chdir(sys.path[0])
 
 from pathlib import Path
 

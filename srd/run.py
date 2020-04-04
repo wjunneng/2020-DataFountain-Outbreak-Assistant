@@ -3,7 +3,9 @@ from __future__ import absolute_import, division, print_function
 import os
 import sys
 
+sys.path.append(os.path.abspath('.'))
 os.chdir(sys.path[0])
+
 import argparse
 import logging
 import os
@@ -17,7 +19,7 @@ from tqdm import tqdm
 from transformers import BertTokenizer, AdamW, BertConfig
 from itertools import cycle
 
-from srd.cores.model_nq import BertForQuestionAnswering
+from srd.cores.model import BertForQuestionAnswering
 from srd.libs.prepare_data import read_examples, convert_examples_to_features, TextDataset, collate_fn, set_seed, \
     Result, eval_collate_fn, pre_process, FGM
 
@@ -35,8 +37,14 @@ def main():
                         help="The input data dir. Should contain the .tsv files (or other data files) for the task.")
     parser.add_argument("--passage_dir", default=None, type=str,
                         help="The passage data dir. Should contain the .tsv files (or other data files) for the task.")
+    parser.add_argument("--train_dir", default=None, type=str,
+                        help="The train data dir. Should contain the .tsv files (or other data files) for the task.")
     parser.add_argument("--test_dir", default=None, type=str,
                         help="The test data dir. Should contain the .tsv files (or other data files) for the task.")
+    parser.add_argument("--train_json_path", default=None, type=str, required=True,
+                        help="The train json path. Should contain the .tsv files (or other data files) for the task.")
+    parser.add_argument("--dev_json_path", default=None, type=str, required=True,
+                        help="The dev json path. Should contain the .tsv files (or other data files) for the task.")
     parser.add_argument("--model_name_or_path", default=None, type=str,
                         help="")
     parser.add_argument("--output_dir", default=None, type=str,
@@ -47,9 +55,11 @@ def main():
                         help="")
     # Other parameters
     parser.add_argument("--max_seq_length", default=256, type=int,
-                        help="The maximum total input sequence length after tokenization. Sequences longer than this will be truncated, sequences shorter will be padded.")
+                        help="The maximum total input sequence length after tokenization. Sequences longer than this"
+                             " will be truncated, sequences shorter will be padded.")
     parser.add_argument("--max_question_length", default=50, type=int,
-                        help="The maximum total input sequence length after tokenization. Sequences longer than this will be truncated, sequences shorter will be padded.")
+                        help="The maximum total input sequence length after tokenization. Sequences longer than this"
+                             " will be truncated, sequences shorter will be padded.")
     parser.add_argument("--do_train", action='store_true',
                         help="Whether to run training.")
     parser.add_argument("--do_test", action='store_true',
@@ -89,8 +99,9 @@ def main():
     # args.es_index = 'passages'
     # args.es_ip = 'localhost'
     # args.data_dir = './data'
-    # args.test_dir = './data/test1.csv'
-    # args.passage_dir = './data/passage1.csv'
+    # args.train_dir = './data/train.csv
+    # args.test_dir = './data/test.csv'
+    # args.passage_dir = './data/passage.csv'
     # args.output_dir = './output/'
     # args.max_seq_length = 512
     # args.max_question_length = 96
@@ -101,22 +112,22 @@ def main():
     # args.train_steps = 1500
 
     # ########## local test ##########
-    args.model_name_or_path = '/home/wjunneng/Ubuntu/NLP/2020_4/COVID19_qa_baseline/chinese_roberta_wwm_ext_pytorch'
-    args.do_test = True
-    args.k = 5
-    args.es_index = 'passages'
-    args.es_ip = 'localhost'
-    args.data_dir = './data'
-    args.test_dir = './data/test1.csv'
-    args.passage_dir = './data/passage1.csv'
-    args.output_dir = './output/'
-    args.max_seq_length = 512
-    args.max_question_length = 96
-    args.eval_steps = 100
-    args.per_gpu_train_batch_size = 16
-    args.per_gpu_eval_batch_size = 16
-    args.learning_rate = 1e-5
-    args.train_steps = 1500
+    # args.model_name_or_path = '/home/wjunneng/Ubuntu/NLP/2020_4/COVID19_qa_baseline/chinese_roberta_wwm_ext_pytorch'
+    # args.do_test = True
+    # args.k = 5
+    # args.es_index = 'passages'
+    # args.es_ip = 'localhost'
+    # args.data_dir = './data'
+    # args.test_dir = './data/test.csv'
+    # args.passage_dir = './data/passage.csv'
+    # args.output_dir = './output/'
+    # args.max_seq_length = 512
+    # args.max_question_length = 96
+    # args.eval_steps = 100
+    # args.per_gpu_train_batch_size = 16
+    # args.per_gpu_eval_batch_size = 16
+    # args.learning_rate = 1e-5
+    # args.train_steps = 1500
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     args.n_gpu = torch.cuda.device_count()
@@ -145,7 +156,7 @@ def main():
 
         args.train_batch_size = args.per_gpu_train_batch_size * max(1, args.n_gpu)
 
-        train_examples = read_examples(os.path.join(args.data_dir, 'train1.csv'), args.passage_dir, is_training=1)
+        train_examples = read_examples(args.train_dir, args.passage_dir, is_training=1)
         convert_func = functools.partial(convert_examples_to_features,
                                          tokenizer=tokenizer,
                                          max_seq_length=args.max_seq_length,
@@ -207,7 +218,8 @@ def main():
             loss = model(input_ids=input_ids.to(device), token_type_ids=segment_ids.to(device),
                          attention_mask=input_mask.to(device), labels=y_label)
             if args.n_gpu > 1:
-                loss = loss.mean()  # mean() to average on multi-gpu.
+                # mean() to average on multi-gpu.
+                loss = loss.mean()
             if args.gradient_accumulation_steps > 1:
                 loss = loss / args.gradient_accumulation_steps
             tr_loss += loss.item()
@@ -218,15 +230,19 @@ def main():
 
             loss.backward()
             # 对抗训练
-            fgm.attack()  # 在embedding上添加对抗扰动
+            # 在embedding上添加对抗扰动
+            fgm.attack()
             loss_adv = model(input_ids=input_ids.to(device), token_type_ids=segment_ids.to(device),
                              attention_mask=input_mask.to(device), labels=y_label)
             if args.n_gpu > 1:
-                loss_adv = loss_adv.mean()  # mean() to average on multi-gpu.
+                # mean() to average on multi-gpu.
+                loss_adv = loss_adv.mean()
             if args.gradient_accumulation_steps > 1:
                 loss_adv = loss_adv / args.gradient_accumulation_steps
-            loss_adv.backward()  # 反向传播，并在正常的grad基础上，累加对抗训练的梯度
-            fgm.restore()  # 恢复embedding参数
+            # 反向传播，并在正常的grad基础上，累加对抗训练的梯度
+            loss_adv.backward()
+            # 恢复embedding参数
+            fgm.restore()
 
             if (nb_tr_steps + 1) % args.gradient_accumulation_steps == 0:
                 optimizer.step()
@@ -242,11 +258,11 @@ def main():
 
             if args.do_eval and (step + 1) % (args.eval_steps * args.gradient_accumulation_steps) == 0:
                 if args.do_eval_train:
-                    file_list = ['train.json', 'dev.json']
+                    file_list = [args.train_json_path, args.dev_json_path]
                 else:
-                    file_list = ['dev.json']
+                    file_list = [args.dev_json_path]
                 for file in file_list:
-                    eval_examples = read_examples(os.path.join(args.data_dir, file), args.passage_dir, is_training=2)
+                    eval_examples = read_examples(file, args.passage_dir, is_training=2)
                     convert_func_eval = functools.partial(convert_examples_to_features,
                                                           tokenizer=tokenizer,
                                                           max_seq_length=args.max_seq_length,

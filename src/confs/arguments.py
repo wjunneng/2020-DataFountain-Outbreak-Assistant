@@ -4,17 +4,15 @@ import sys
 
 os.chdir(sys.path[0])
 
-sys.path.append(os.path.abspath('.'))
+from pathlib import Path
 
-# ########################### 线下
-# local = True
-# project_dir = '/home/wjunneng/Ubuntu/2020-DataFountain-Outbreak-Assistant'
-# ########################### 线下
-
-# ########################### 线上
+# 线上
 local = False
-project_dir = '/content/Ubuntu/2020-DataFountain-Outbreak-Assistant'
-# ########################### 线上
+
+# 线下
+# local = True
+
+project_dir = Path(os.path.sep.join(os.path.abspath(__file__).split(os.path.sep)[:-3]))
 
 # -* original data *-
 data_dir = os.path.join(project_dir, 'data')

@@ -3,7 +3,9 @@ from __future__ import absolute_import, division, print_function
 import os
 import sys
 
+sys.path.append(os.path.abspath('.'))
 os.chdir(sys.path[0])
+
 import json
 import pandas as pd
 
@@ -101,7 +103,7 @@ def generate_train_dev_file(context_path, train_path, train_0301_path, dev_0301_
     :return:
     """
     # docid2context: docid text
-    docid2context = pd.read_csv(context_path)
+    docid2context = get_data_frame(context_path)
     docid2context = dict(zip(docid2context['docid'], docid2context['text']))
 
     if os.path.exists(train_0301_path) and os.path.exists(dev_0301_path):
@@ -202,7 +204,7 @@ if __name__ == '__main__':
     # dev_json_path = '/home/wjunneng/Ubuntu/NLP/2020_4/COVID19_qa_baseline/data/dev.json'
     # get_data_frame(dev_json_path)
 
-    generate_train_dev_file(context_path='./data/passage1.csv',
-                            train_path='./data/train.csv',
-                            train_0301_path='./data/train.json',
-                            dev_0301_path='./data/dev.json')
+    # generate_train_dev_file(context_path='./data/passage1.csv',
+    #                         train_path='./data/train.csv',
+    #                         train_0301_path='./data/train.json',
+    #                         dev_0301_path='./data/dev.json')

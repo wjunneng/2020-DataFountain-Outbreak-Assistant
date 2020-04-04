@@ -9,6 +9,8 @@ from collections import Counter
 
 import pandas as pd
 import tensorflow as tf
+
+
 # import tensorflow.contrib.slim as slim
 
 
@@ -298,3 +300,66 @@ def re_find_fake_answer_I(line):
             sample['answer']['span'] = [-1, -1]
 
     return sample
+
+
+def get_data_frame(path):
+    """
+    读取原始数据，返回DataFrame数据类型
+    """
+    data = {}
+    if os.path.splitext(path)[-1] == '.csv':
+        with open(path, 'r', encoding='utf-8') as file:
+            for index, line in enumerate(file.readlines()):
+                line = line.strip('\n')
+                if index == 0:
+                    for char in line.split('\t'):
+                        data[char] = []
+                    continue
+
+                r = line.strip().split('\t')
+                keys = list(data.keys())
+
+                if len(r) > len(keys):
+                    r[1] = '\t'.join(r[1:])
+                    r = r[:2]
+
+                for index in range(len(keys)):
+                    data[keys[index]].append(r[index])
+
+    elif os.path.splitext(path)[-1] == '.json':
+        with open(path, 'r', encoding='utf-8') as file:
+            for index, line in enumerate(file.readlines()):
+                if index == 0:
+                    for key, value in eval(line).items():
+                        if key == 'answer':
+                            start_index = int(value['span'][0])
+                            end_index = int(value['span'][1])
+                            # # 注意此出可以优化， 当前暂时跳过不计
+                            # if start_index >= end_index:
+                            #     continue
+                            answer = value['text']
+                            answer = answer.strip('\n')
+                            data['start_index'] = [start_index]
+                            data['end_index'] = [end_index]
+                            data['answer'] = [answer]
+                            continue
+
+                        data[key] = [value]
+                else:
+                    for key, value in eval(line).items():
+                        if key == 'answer':
+                            start_index = int(value['span'][0])
+                            end_index = int(value['span'][1])
+                            # # 注意此出可以优化， 当前暂时跳过不计
+                            # if start_index >= end_index:
+                            #     continue
+                            answer = value['text']
+                            answer = answer.strip('\n')
+                            data['start_index'].append(start_index)
+                            data['end_index'].append(end_index)
+                            data['answer'].append(str(answer))
+                            continue
+
+                        data[key].append(value)
+
+    return pd.DataFrame(data)

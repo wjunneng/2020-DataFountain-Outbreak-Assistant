@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import os
 import sys
 
+sys.path.append(os.path.abspath('.'))
 os.chdir(sys.path[0])
 
 import argparse
@@ -10,7 +11,7 @@ import pandas as pd
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
-from srd.libs.util import get_data_frame
+from srd.libs.util import get_data_frame, generate_train_dev_file
 
 
 def dispose_train(train_df, passage_df, clean_train_dir):
@@ -127,12 +128,16 @@ class ElasticObj:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # Required parameters
-    parser.add_argument("--train_dir", default=None, type=str, required=True,
-                        help="The input data dir. Should contain the .tsv files (or other data files) for the task.")
     parser.add_argument("--passage_dir", default=None, type=str, required=True,
                         help="The passage data dir. Should contain the .tsv files (or other data files) for the task.")
+    parser.add_argument("--train_dir", default=None, type=str, required=True,
+                        help="The input data dir. Should contain the .tsv files (or other data files) for the task.")
     parser.add_argument("--test_dir", default=None, type=str, required=True,
                         help="The test data dir. Should contain the .tsv files (or other data files) for the task.")
+    parser.add_argument("--train_json_path", default=None, type=str, required=True,
+                        help="The train json path. Should contain the .tsv files (or other data files) for the task.")
+    parser.add_argument("--dev_json_path", default=None, type=str, required=True,
+                        help="The dev json path. Should contain the .tsv files (or other data files) for the task.")
     parser.add_argument("--clean_train_dir", default=None, type=str, required=True,
                         help="")
     parser.add_argument("--clean_passage_dir", default=None, type=str, required=True,
@@ -150,3 +155,8 @@ if __name__ == "__main__":
     obj = ElasticObj(args.es_index, "_doc", ip=args.es_ip)
     obj.create_index(args.es_index, "_doc")
     obj.bulk_Index_Data(args.clean_passage_dir)
+
+    generate_train_dev_file(context_path=args.passage_dir,
+                            train_path=args.train_dir,
+                            train_0301_path=args.train_json_path,
+                            dev_0301_path=args.dev_json_path)

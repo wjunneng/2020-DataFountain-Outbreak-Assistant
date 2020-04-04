@@ -13,7 +13,7 @@ import json
 random.seed(1)
 
 from src.confs import arguments
-from src.libs.utils import re_find_fake_answer, re_find_fake_answer_I, load_context, load_query_docids
+from src.libs.utils import get_data_frame, re_find_fake_answer_I, load_context, load_query_docids
 
 if not os.path.exists(arguments.fold_dir):
     os.makedirs(arguments.fold_dir)
@@ -61,7 +61,8 @@ def generate_train_dev_file(context_path, train_path, train_0301_path, dev_0301_
     :return:
     """
     # docid2context: docid text
-    docid2context = load_context(context_path)
+    docid2context = get_data_frame(context_path)
+    docid2context = dict(zip(docid2context['docid'], docid2context['text']))
 
     if os.path.exists(train_0301_path) and os.path.exists(dev_0301_path):
         os.remove(train_0301_path)
@@ -90,36 +91,47 @@ def generate_train_dev_file(context_path, train_path, train_0301_path, dev_0301_
 
             if docid not in train_docid_set:
                 train_docid_set.add(docid)
-                rv = {'id': id, 'docid': docid, 'context': docid2context[docid], 'question': question,
-                      'answer': {'text': answer}}
-
-                if arguments.local and len(train_docid_set) == 600:
-                    break
+                rv = {'id': id, 'docid': docid, 'context': docid2context[docid].replace(' ', ''),
+                      'question': question.replace(' ', ''),
+                      'answer': {'text': answer.replace(' ', '')}}
 
                 # type_1
                 # rv = re_find_fake_answer(json.dumps(rv))
                 # type_2
                 rv = re_find_fake_answer_I(json.dumps(rv))
+                # 注意此出可以优化， 当前暂时跳过不计
+                if rv['answer']['span'] is None:
+                    continue
 
                 train_0301.write(json.dumps(rv, ensure_ascii=False) + '\n')
             elif docid in train_docid_set and docid not in dev_docid_set:
                 dev_docid_set.add(docid)
-                rv = {'id': id, 'docid': docid, 'context': docid2context[docid], 'question': question,
-                      'answer': {'text': answer}}
+                rv = {'id': id, 'docid': docid, 'context': docid2context[docid].replace(' ', ''),
+                      'question': question.replace(' ', ''),
+                      'answer': {'text': answer.replace(' ', '')}}
 
                 # type_1
                 # rv = re_find_fake_answer(json.dumps(rv))
                 # type_2
                 rv = re_find_fake_answer_I(json.dumps(rv))
+                # 注意此出可以优化， 当前暂时跳过不计
+                if rv['answer']['span'] is None:
+                    continue
+
                 dev_0301.write(json.dumps(rv, ensure_ascii=False) + '\n')
             else:
-                rv = {'id': id, 'docid': docid, 'context': docid2context[docid], 'question': question,
-                      'answer': {'text': answer}}
+                rv = {'id': id, 'docid': docid, 'context': docid2context[docid].replace(' ', ''),
+                      'question': question.replace(' ', ''),
+                      'answer': {'text': answer.replace(' ', '')}}
 
                 # type_1
                 # rv = re_find_fake_answer(json.dumps(rv))
                 # type_2
                 rv = re_find_fake_answer_I(json.dumps(rv))
+                # 注意此出可以优化， 当前暂时跳过不计
+                if rv['answer']['span'] is None:
+                    continue
+
                 train_0301.write(json.dumps(rv, ensure_ascii=False) + '\n')
 
     train_0301.close()
@@ -182,5 +194,5 @@ if __name__ == '__main__':
                             train_0301_path=arguments.train_0301_path, dev_0301_path=arguments.dev_0301_path)
 
     # 生成测试集
-    generate_test(context_path=arguments.context_path, test_path=arguments.test_path,
-                  test_0301_path=arguments.test_0301_path, query_docids_path=arguments.query_docids_path)
+    # generate_test(context_path=arguments.context_path, test_path=arguments.test_path,
+    #               test_0301_path=arguments.test_0301_path, query_docids_path=arguments.query_docids_path)
