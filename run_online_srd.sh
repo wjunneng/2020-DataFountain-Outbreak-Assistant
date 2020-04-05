@@ -45,7 +45,7 @@ export PREV_TRAINED_MODEL=$DATA_DIR/prev_trained_model
 python $SRD_DIR/run.py \
   --model_name_or_path $PREV_TRAINED_MODEL/chinese_roberta_wwm_ext_pytorch \
   --do_test \
-  --k 10 \
+  --k 5 \
   --es_index passages \
   --es_ip localhost \
   --data_dir $DATA_DIR \
@@ -57,7 +57,7 @@ python $SRD_DIR/run.py \
   --max_seq_length 512 \
   --max_question_length 96 \
   --eval_steps 50 \
-  --per_gpu_train_batch_size 64 \
-  --per_gpu_eval_batch_size 64 \
+  --per_gpu_train_batch_size 96 \
+  --per_gpu_eval_batch_size 96 \
   --learning_rate 1e-5 \
   --train_steps 1000
