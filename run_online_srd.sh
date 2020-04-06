@@ -45,7 +45,7 @@ export PREV_TRAINED_MODEL=$DATA_DIR/prev_trained_model
 python $SRD_DIR/run.py \
   --model_name_or_path $PREV_TRAINED_MODEL/chinese_roberta_wwm_ext_pytorch \
   --do_test \
-  --k 5 \
+  --k 3 \
   --es_index passages \
   --es_ip localhost \
   --data_dir $DATA_DIR \
