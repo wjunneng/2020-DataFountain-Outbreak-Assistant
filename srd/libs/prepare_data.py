@@ -20,6 +20,10 @@ from elasticsearch import Elasticsearch
 
 from srd.libs.util import get_data_frame
 
+import sys
+
+# 例如这里设置为十万
+sys.setrecursionlimit(100000)
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt='%m/%d/%Y %H:%M:%S',
                     level=logging.INFO)
