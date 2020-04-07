@@ -97,7 +97,7 @@ class ElasticObj:
         success, _ = bulk(self.es, ACTIONS, index=self.index_name, raise_on_error=True)
         print('Performed %d actions' % success)
 
-    def create_index(self, index_name, index_type):
+    def create_index(self):
         """
         创建索引,创建索引名称为ott，类型为ott_type的索引
         :param ex: Elasticsearch对象
@@ -153,7 +153,7 @@ if __name__ == "__main__":
                args.clean_test_dir)
     # 建立ES，把文档批量导入索引节点
     obj = ElasticObj(args.es_index, "_doc", ip=args.es_ip)
-    obj.create_index(args.es_index, "_doc")
+    obj.create_index()
     obj.bulk_Index_Data(args.clean_passage_dir)
 
     generate_train_dev_file(context_path=args.passage_dir,

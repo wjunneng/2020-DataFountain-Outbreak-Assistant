@@ -14,7 +14,8 @@ class BertForQuestionAnswering(BertPreTrainedModel):
     def __init__(self, config):
         super(BertForQuestionAnswering, self).__init__(config)
         self.bert = BertModel(config)
-        self.qa_outputs = nn.Linear(config.hidden_size, 2)  # start/end
+        # start/end
+        self.qa_outputs = nn.Linear(config.hidden_size, 2)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
         self.classifier = nn.Linear(config.hidden_size, config.num_labels)
         self.init_weights()

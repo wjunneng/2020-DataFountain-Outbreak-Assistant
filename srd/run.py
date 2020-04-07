@@ -374,7 +374,7 @@ def main():
                 segment_ids = segment_ids.to(device)
                 y_preds = model(input_ids=input_ids, token_type_ids=segment_ids, attention_mask=input_mask)
                 start_preds, end_preds, class_preds = (p.detach().cpu() for p in y_preds)
-                result.update(examples, start_preds, end_preds, class_preds, 10)
+                result.update(examples, start_preds, end_preds, class_preds, 5)
 
         predictions = result.score()
         predictions.to_csv(os.path.join(args.output_dir, 'test_prediction.csv'), index=False, header=True, sep='\t')

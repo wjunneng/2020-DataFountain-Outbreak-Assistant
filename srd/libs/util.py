@@ -85,7 +85,8 @@ def re_find_fake_answer_I(line):
         answer = sample['answer']['text']
         if answer in context:
             start_index = context.index(answer)
-            end_index = start_index + len(answer) - 1
+            # 左闭右开
+            end_index = start_index + len(answer)
             sample['answer']['span'] = [start_index, end_index]
         else:
             sample['answer']['span'] = None
