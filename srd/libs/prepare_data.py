@@ -582,7 +582,8 @@ class Result(object):
             return scores['rouge-l']['f'], df
         else:
             doc_id = [d['docid'] for d in data]
-            df = pd.DataFrame({'id': example_id, 'docid': doc_id, 'answer': prediction})
+            df = pd.DataFrame(
+                {'id': example_id, 'docid': doc_id, 'answer': [i if i.strip() != '' else '-' for i in prediction]})
             return df
 
 

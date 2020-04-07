@@ -377,6 +377,7 @@ def main():
                 result.update(examples, start_preds, end_preds, class_preds, 5)
 
         predictions = result.score()
+                
         predictions.to_csv(os.path.join(args.output_dir, 'test_prediction.csv'), index=False, header=True, sep='\t')
         logger.info('predict done')
 
