@@ -37,8 +37,8 @@ python $SRD_DIR/run.py \
   --max_seq_length 512 \
   --max_question_length 96 \
   --eval_steps 100 \
-  --per_gpu_train_batch_size 16 \
-  --per_gpu_eval_batch_size 16 \
+  --per_gpu_train_batch_size 2 \
+  --per_gpu_eval_batch_size 2 \
   --learning_rate 1e-5 \
   --train_steps 2000
 

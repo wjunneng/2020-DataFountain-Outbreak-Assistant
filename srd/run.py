@@ -22,6 +22,7 @@ from itertools import cycle
 from srd.cores.model import BertForQuestionAnswering
 from srd.libs.prepare_data import read_examples, convert_examples_to_features, TextDataset, collate_fn, set_seed, \
     Result, eval_collate_fn, pre_process, FGM
+from srd.libs.ema import ExponentialMovingAverage
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt='%m/%d/%Y %H:%M:%S',
@@ -189,6 +190,7 @@ def main():
         ]
 
         optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, eps=args.adam_epsilon)
+        ema = ExponentialMovingAverage(model.parameters(), decay=0.995)
 
         global_step = 0
 
@@ -248,6 +250,7 @@ def main():
                 optimizer.step()
                 optimizer.zero_grad()
                 global_step += 1
+                ema.update(model.parameters())
 
             if (step + 1) % (args.eval_steps * args.gradient_accumulation_steps) == 0:
                 tr_loss = 0
@@ -287,6 +290,7 @@ def main():
                     eval_dataloader = DataLoader(eval_data, sampler=eval_sampler, batch_size=args.eval_batch_size,
                                                  collate_fn=eval_collate_fn)
 
+                    ema.copy_to(model.parameters())
                     model.eval()
                     with torch.no_grad():
                         result = Result()
@@ -377,7 +381,7 @@ def main():
                 result.update(examples, start_preds, end_preds, class_preds, 5)
 
         predictions = result.score()
-                
+
         predictions.to_csv(os.path.join(args.output_dir, 'test_prediction.csv'), index=False, header=True, sep='\t')
         logger.info('predict done')
 
