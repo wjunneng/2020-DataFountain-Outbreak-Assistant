@@ -194,7 +194,7 @@ def main():
 
         optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, eps=args.adam_epsilon)
         if args.use_ema:
-            ema = ExponentialMovingAverage(model.parameters(), decay=0.90)
+            ema = ExponentialMovingAverage(model.parameters(), decay=0.80)
 
         global_step = 0
 
