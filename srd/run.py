@@ -54,6 +54,9 @@ def main():
                         help="")
     parser.add_argument("--es_ip", default=None, type=str,
                         help="")
+    parser.add_argument("--use_ema", action='store_true',
+                        help="ema")
+
     # Other parameters
     parser.add_argument("--max_seq_length", default=256, type=int,
                         help="The maximum total input sequence length after tokenization. Sequences longer than this"
@@ -190,7 +193,8 @@ def main():
         ]
 
         optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, eps=args.adam_epsilon)
-        ema = ExponentialMovingAverage(model.parameters(), decay=0.995)
+        if args.use_ema:
+            ema = ExponentialMovingAverage(model.parameters(), decay=0.90)
 
         global_step = 0
 
@@ -250,7 +254,9 @@ def main():
                 optimizer.step()
                 optimizer.zero_grad()
                 global_step += 1
-                ema.update(model.parameters())
+
+                if args.use_ema:
+                    ema.update(model.parameters())
 
             if (step + 1) % (args.eval_steps * args.gradient_accumulation_steps) == 0:
                 tr_loss = 0
@@ -290,8 +296,10 @@ def main():
                     eval_dataloader = DataLoader(eval_data, sampler=eval_sampler, batch_size=args.eval_batch_size,
                                                  collate_fn=eval_collate_fn)
 
-                    ema.copy_to(model.parameters())
-                    model.eval()
+                    if args.use_ema:
+                        ema.copy_to(model.parameters())
+                    else:
+                        model.eval()
                     with torch.no_grad():
                         result = Result()
                         for input_ids, input_mask, segment_ids, examples in tqdm(eval_dataloader):

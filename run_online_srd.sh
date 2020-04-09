@@ -37,10 +37,11 @@ python $SRD_DIR/run.py \
   --max_seq_length 512 \
   --max_question_length 96 \
   --eval_steps 100 \
-  --per_gpu_train_batch_size 2 \
-  --per_gpu_eval_batch_size 2 \
+  --per_gpu_train_batch_size 16 \
+  --per_gpu_eval_batch_size 16 \
   --learning_rate 1e-5 \
-  --train_steps 2000
+  --train_steps 2000 \
+  --use_ema
 
 #python $SRD_DIR/run.py \
 #  --model_name_or_path $PREV_TRAINED_MODEL/chinese_roberta_wwm_ext_pytorch \
