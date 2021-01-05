@@ -15,6 +15,13 @@ from srd.libs.util import get_data_frame, generate_train_dev_file
 
 
 def dispose_train(train_df, passage_df, clean_train_dir):
+    """
+    获取 start/end index
+    :param train_df:
+    :param passage_df:
+    :param clean_train_dir:
+    :return:
+    """
     s, e, a = [], [], []
     for i, val in enumerate(train_df[['id', 'docid', 'question', 'answer']].values):
         passage = passage_df[passage_df['docid'] == val[1]].values[0][-1]
@@ -34,6 +41,16 @@ def dispose_train(train_df, passage_df, clean_train_dir):
 
 
 def clean_data(train_dir, clean_train_dir, passage_dir, clean_passage_dir, test_dir, clean_test_dir):
+    """
+    数据清洗 5000 -> 4995 条数据集
+    :param train_dir:
+    :param clean_train_dir:
+    :param passage_dir:
+    :param clean_passage_dir:
+    :param test_dir:
+    :param clean_test_dir:
+    :return:
+    """
     # clean passage file
     passage = get_data_frame(passage_dir)
     for i in passage.index:
@@ -63,7 +80,9 @@ class ElasticObj:
         :param index_name: 索引名称
         :param index_type: 索引类型
         """
+        # 索引名称
         self.index_name = index_name
+        # 索引类型
         self.index_type = index_type
         # 无用户名密码状态
         self.es = Elasticsearch([ip])
@@ -128,32 +147,51 @@ class ElasticObj:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # Required parameters
-    parser.add_argument("--passage_dir", default=None, type=str, required=True,
+    parser.add_argument("--passage_dir", default=None, type=str,
                         help="The passage data dir. Should contain the .tsv files (or other data files) for the task.")
-    parser.add_argument("--train_dir", default=None, type=str, required=True,
+    parser.add_argument("--train_dir", default=None, type=str,
                         help="The input data dir. Should contain the .tsv files (or other data files) for the task.")
-    parser.add_argument("--test_dir", default=None, type=str, required=True,
+    parser.add_argument("--test_dir", default=None, type=str,
                         help="The test data dir. Should contain the .tsv files (or other data files) for the task.")
-    parser.add_argument("--train_json_path", default=None, type=str, required=True,
+    parser.add_argument("--train_json_path", default=None, type=str,
                         help="The train json path. Should contain the .tsv files (or other data files) for the task.")
-    parser.add_argument("--dev_json_path", default=None, type=str, required=True,
+    parser.add_argument("--dev_json_path", default=None, type=str,
                         help="The dev json path. Should contain the .tsv files (or other data files) for the task.")
-    parser.add_argument("--clean_train_dir", default=None, type=str, required=True,
+    parser.add_argument("--clean_train_dir", default=None, type=str,
                         help="")
-    parser.add_argument("--clean_passage_dir", default=None, type=str, required=True,
+    parser.add_argument("--clean_passage_dir", default=None, type=str,
                         help="")
-    parser.add_argument("--clean_test_dir", default=None, type=str, required=True,
+    parser.add_argument("--clean_test_dir", default=None, type=str,
                         help="")
-    parser.add_argument("--es_index", default=None, type=str, required=True,
+    parser.add_argument("--es_index", default=None, type=str,
                         help="")
-    parser.add_argument("--es_ip", default=None, type=str, required=True,
+    parser.add_argument("--es_ip", default=None, type=str,
                         help="")
+
     args = parser.parse_args()
+
+    project_dir = '/home/wjunneng/Ubuntu/2020-DataFountain-Outbreak-Assistant'
+    args.passage_dir = os.path.join(project_dir, 'data', 'input', 'NCPPolicies_context_20200301.csv')
+    args.train_dir = os.path.join(project_dir, 'data', 'input', 'NCPPolicies_train_20200301.csv')
+    args.test_dir = os.path.join(project_dir, 'data', 'input', 'NCPPolicies_test.csv')
+    args.train_json_path = os.path.join(project_dir, 'data', 'fold', 'train.json')
+    args.dev_json_path = os.path.join(project_dir, 'data', 'fold', 'dev.json')
+    args.clean_passage_dir = os.path.join(project_dir, 'data', 'fold', 'passage.csv')
+    args.clean_train_dir = os.path.join(project_dir, 'data', 'fold', 'train.csv')
+    args.clean_test_dir = os.path.join(project_dir, 'data', 'fold', 'test.csv')
+    args.es_index = 'passages'
+    args.es_ip = 'localhost'
+
+    # 进行数据清洗
     clean_data(args.train_dir, args.clean_train_dir, args.passage_dir, args.clean_passage_dir, args.test_dir,
                args.clean_test_dir)
+
     # 建立ES，把文档批量导入索引节点
-    obj = ElasticObj(args.es_index, "_doc", ip=args.es_ip)
+    obj = ElasticObj(index_name=args.es_index, index_type="_doc", ip=args.es_ip)
+
+    # 创建索引
     obj.create_index()
+
     obj.bulk_Index_Data(args.clean_passage_dir)
 
     generate_train_dev_file(context_path=args.passage_dir,

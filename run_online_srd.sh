@@ -8,7 +8,7 @@ export INPUT_DIR=$DATA_DIR/input
 export OUTPUT_DIR=$DATA_DIR/output
 export PREV_TRAINED_MODEL=$DATA_DIR/prev_trained_model
 
-# 记得开启elasticsearch
+## 记得开启elasticsearch
 #python $SRD_DIR/libs/preprocess.py \
 #  --passage_dir $INPUT_DIR/NCPPolicies_context_20200301.csv \
 #  --train_dir $INPUT_DIR/NCPPolicies_train_20200301.csv \
@@ -21,27 +21,27 @@ export PREV_TRAINED_MODEL=$DATA_DIR/prev_trained_model
 #  --es_index passages \
 #  --es_ip localhost
 
-python $SRD_DIR/run.py \
-  --model_name_or_path $PREV_TRAINED_MODEL/chinese_roberta_wwm_ext_pytorch \
-  --do_train \
-  --do_eval \
-  --es_index passages \
-  --es_ip localhost \
-  --data_dir $DATA_DIR \
-  --train_dir $FOLD_DIR/train.csv \
-  --test_dir $FOLD_DIR/test.csv \
-  --train_json_path $FOLD_DIR/train.json \
-  --dev_json_path $FOLD_DIR/dev.json \
-  --passage_dir $FOLD_DIR/passage.csv \
-  --output_dir $OUTPUT_DIR \
-  --max_seq_length 512 \
-  --max_question_length 96 \
-  --eval_steps 100 \
-  --per_gpu_train_batch_size 16 \
-  --per_gpu_eval_batch_size 16 \
-  --learning_rate 1e-5 \
-  --train_steps 2000 \
-  --use_ema
+#python $SRD_DIR/run.py \
+#  --model_name_or_path $PREV_TRAINED_MODEL/chinese_roberta_wwm_ext_pytorch \
+#  --do_train \
+#  --do_eval \
+#  --es_index passages \
+#  --es_ip localhost \
+#  --data_dir $DATA_DIR \
+#  --train_dir $FOLD_DIR/train.csv \
+#  --test_dir $FOLD_DIR/test.csv \
+#  --train_json_path $FOLD_DIR/train.json \
+#  --dev_json_path $FOLD_DIR/dev.json \
+#  --passage_dir $FOLD_DIR/passage.csv \
+#  --output_dir $OUTPUT_DIR \
+#  --max_seq_length 512 \
+#  --max_question_length 96 \
+#  --eval_steps 100 \
+#  --per_gpu_train_batch_size 16 \
+#  --per_gpu_eval_batch_size 16 \
+#  --learning_rate 1e-5 \
+#  --train_steps 2000 \
+#  --use_ema
 
 #python $SRD_DIR/run.py \
 #  --model_name_or_path $PREV_TRAINED_MODEL/chinese_roberta_wwm_ext_pytorch \

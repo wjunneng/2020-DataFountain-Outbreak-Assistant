@@ -13,6 +13,8 @@ import pandas as pd
 def get_data_frame(path):
     """
     读取原始数据，返回DataFrame数据类型
+    :param path:
+    :return:
     """
     data = {}
     if os.path.splitext(path)[-1] == '.csv':

@@ -138,6 +138,15 @@ def read_examples(input_file, doc_file, is_training, k=1, es_index="passages", e
 
 
 def convert_examples_to_features(example, tokenizer, max_seq_length, max_question_length, is_training):
+    """
+    将examples 转化为 features
+    :param example:
+    :param tokenizer:
+    :param max_seq_length:
+    :param max_question_length:
+    :param is_training:
+    :return:
+    """
     # tokenize question
     question_tokens = tokenizer.tokenize(example.text_b)[:max_question_length]
     # tokenize passage & build original to token index
@@ -196,7 +205,9 @@ def convert_examples_to_features(example, tokenizer, max_seq_length, max_questio
                         label = 'unknown'
                     elif multi_sentense_start <= start_position and end_position <= multi_sentense_end:
                         # checked
+                        # 此处的start_position 表示在当前片段中，答案片段的offset（偏移位置）
                         start = start_position - multi_sentense_start + len(question_tokens) + 2
+                        # 此处的end_position 表示（偏移位置）+ 答案片段的长度
                         end = end_position - multi_sentense_start + len(question_tokens) + 2
                         label = 'known'
                     else:

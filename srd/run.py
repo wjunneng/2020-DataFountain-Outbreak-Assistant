@@ -42,9 +42,9 @@ def main():
                         help="The train data dir. Should contain the .tsv files (or other data files) for the task.")
     parser.add_argument("--test_dir", default=None, type=str,
                         help="The test data dir. Should contain the .tsv files (or other data files) for the task.")
-    parser.add_argument("--train_json_path", default=None, type=str, required=True,
+    parser.add_argument("--train_json_path", default=None, type=str,
                         help="The train json path. Should contain the .tsv files (or other data files) for the task.")
-    parser.add_argument("--dev_json_path", default=None, type=str, required=True,
+    parser.add_argument("--dev_json_path", default=None, type=str,
                         help="The dev json path. Should contain the .tsv files (or other data files) for the task.")
     parser.add_argument("--model_name_or_path", default=None, type=str,
                         help="")
@@ -97,23 +97,27 @@ def main():
     args = parser.parse_args()
 
     # ########## local train ##########
-    # args.model_name_or_path = '/home/wjunneng/Ubuntu/NLP/2020_4/COVID19_qa_baseline/chinese_roberta_wwm_ext_pytorch'
-    # args.do_train = True
-    # args.do_eval = True
-    # args.es_index = 'passages'
-    # args.es_ip = 'localhost'
-    # args.data_dir = './data'
-    # args.train_dir = './data/train.csv
-    # args.test_dir = './data/test.csv'
-    # args.passage_dir = './data/passage.csv'
-    # args.output_dir = './output/'
-    # args.max_seq_length = 512
-    # args.max_question_length = 96
-    # args.eval_steps = 100
-    # args.per_gpu_train_batch_size = 2
-    # args.per_gpu_eval_batch_size = 2
-    # args.learning_rate = 1e-5
-    # args.train_steps = 1500
+    project_dir = '/home/wjunneng/Ubuntu/2020-DataFountain-Outbreak-Assistant'
+    args.model_name_or_path = os.path.join(project_dir, 'data', 'prev_trained_model', 'chinese_roberta_wwm_ext_pytorch')
+    args.do_train = True
+    args.do_eval = True
+    args.es_index = 'passages'
+    args.es_ip = 'localhost'
+    args.data_dir = os.path.join(project_dir, 'data')
+    args.train_dir = os.path.join(project_dir, 'data', 'fold', 'train.csv')
+    args.test_dir = os.path.join(project_dir, 'data', 'fold', 'test.csv')
+    args.passage_dir = os.path.join(project_dir, 'data', 'fold', 'passage.csv')
+    args.train_json_path = os.path.join(project_dir, 'data', 'fold', 'train.json')
+    args.dev_json_path = os.path.join(project_dir, 'data', 'fold', 'dev.json')
+    args.output_dir = os.path.join(project_dir, 'output')
+    args.max_seq_length = 512
+    args.max_question_length = 96
+    args.eval_steps = 100
+    args.per_gpu_train_batch_size = 2
+    args.per_gpu_eval_batch_size = 2
+    args.learning_rate = 1e-5
+    args.train_steps = 1500
+    args.use_ema = True
 
     # ########## local test ##########
     # args.model_name_or_path = '/home/wjunneng/Ubuntu/NLP/2020_4/COVID19_qa_baseline/chinese_roberta_wwm_ext_pytorch'
